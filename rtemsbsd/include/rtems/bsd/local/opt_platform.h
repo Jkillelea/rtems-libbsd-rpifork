@@ -2,3 +2,5 @@
 #ifdef BSP_FDT_IS_SUPPORTED
 #define FDT 1
 #endif
+// TODO!!
+#define FDT 1

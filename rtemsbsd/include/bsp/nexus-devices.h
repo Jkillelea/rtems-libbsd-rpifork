@@ -47,6 +47,45 @@
 
 RTEMS_BSD_DRIVER_SMC0(0x4e000000,  RVPBXA9_IRQ_ETHERNET);
 
+#elif defined(LIBBSP_ARM_RASPBERRYPI_BSP_H)
+
+#include <bsp/irq.h>
+
+RTEMS_BSD_DEFINE_NEXUS_DEVICE(ofwbus, 0, 0, NULL);
+SYSINIT_DRIVER_REFERENCE(simplebus, ofwbus);
+
+SYSINIT_DRIVER_REFERENCE(mbox,             simplebus);
+SYSINIT_DRIVER_REFERENCE(bcm2835_bsc,      simplebus);
+SYSINIT_DRIVER_REFERENCE(bcm2835_cpufreq,  cpu);
+SYSINIT_DRIVER_REFERENCE(bcm2835_clkman,   bcm2835_cpufreq);
+
+SYSINIT_DRIVER_REFERENCE(bcm283x_dwcotg,   simplebus);
+SYSINIT_DRIVER_REFERENCE(bcm_audio,        simplebus);
+SYSINIT_DRIVER_REFERENCE(bcm_dma,          simplebus);
+SYSINIT_DRIVER_REFERENCE(ft5406ts,         simplebus);
+SYSINIT_DRIVER_REFERENCE(iicbus,           simplebus);
+SYSINIT_DRIVER_REFERENCE(lintc,            simplebus);
+
+SYSINIT_DRIVER_REFERENCE(sdhci_bcm,        simplebus);
+SYSINIT_DRIVER_REFERENCE(sdhost_bcm,       simplebus);
+SYSINIT_DRIVER_REFERENCE(sdhci_pwm,        simplebus);
+SYSINIT_DRIVER_REFERENCE(sdhci_spi,        simplebus);
+
+SYSINIT_DRIVER_REFERENCE(mmc, sdhost_bcm);
+SYSINIT_DRIVER_REFERENCE(mmcsd, mmc);
+
+SYSINIT_DRIVER_REFERENCE(musbotg, usbss);
+SYSINIT_DRIVER_REFERENCE(rtems_i2c, simplebus);
+SYSINIT_DRIVER_REFERENCE(ofw_iicbus, rtems_i2c);
+SYSINIT_DRIVER_REFERENCE(iic, iicbus);
+SYSINIT_DRIVER_REFERENCE(tda, iicbus);
+SYSINIT_DRIVER_REFERENCE(iicbus, rtems_i2c);
+
+// SYSINIT_DRIVER_REFERENCE(bcm2835_rng,      mbox); // Broken?
+// SYSINIT_DRIVER_REFERENCE(bcm2835_audio,    vchiq); // TODO
+// SYSINIT_DRIVER_REFERENCE(bcm2835fb,        simplebus); // TODO
+// SYSINIT_DRIVER_REFERENCE(bcm2835_pwm,      simplebus); // TODO
+
 #elif defined(LIBBSP_ARM_BEAGLE_BSP_H)
 
 #include <bsp/irq.h>

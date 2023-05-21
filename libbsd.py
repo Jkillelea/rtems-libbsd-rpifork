@@ -178,6 +178,7 @@ class rtems(builder.Module):
                 'local/mmcbr_if.c',
                 'local/if_dwc_if.c',
                 'local/gpio_if.c',
+                'local/mbox_if.c',
                 'rtems/rtems-bsd-allocator-domain-size.c',
                 'rtems/rtems-bsd-get-allocator-domain-size.c',
                 'rtems/rtems-bsd-get-mac-address.c',
@@ -1179,6 +1180,138 @@ class dev_usb_storage(builder.Module):
             ],
             mm.generator['source']()
         )
+
+#
+# BCM283X sources
+#
+class dev_bcm283x(builder.Module):
+
+    def __init__(self, manager):
+        super(dev_bcm283x, self).__init__(manager, type(self).__name__)
+
+    def generate(self):
+        mm = self.manager
+
+        self.addKernelSpaceHeaderFiles([
+            # IRQ
+            'sys/sys/intr.h',
+            'sys/sys/devmap.h',
+
+            # RNG
+            'sys/dev/random/randomdev.h',
+            'sys/dev/random/random_harvestq.h',
+
+            ])
+
+        self.addCPUDependentFreeBSDHeaderFiles([
+            # ??
+            'sys/arm/include/machdep.h',
+            'sys/arm/include/platform.h',
+            'sys/arm/include/platformvar.h',
+            'sys/arm/include/vmparam.h',
+            'sys/arm/include/armreg.h',
+            'sys/arm/include/vm.h',
+
+            # IRQ
+            'sys/arm/include/intr.h',
+
+            # BSC
+            'sys/arm/broadcom/bcm2835/bcm2835_bscreg.h',
+            'sys/arm/broadcom/bcm2835/bcm2835_bscvar.h',
+
+            # # Audio
+            # 'sys/dev/sound/pcm/sound.h',
+            # 'sys/dev/sound/pcm/buffer.h',
+            # 'sys/dev/sound/pcm/matrix.h',
+            # 'sys/dev/sound/pcm/matrix_map.h',
+            # 'sys/dev/sound/pcm/channel.h',
+            # 'sys/dev/sound/pcm/feeder.h',
+            # 'sys/dev/sound/pcm/mixer.h',
+            # 'sys/dev/sound/pcm/dsp.h',
+            # 'sys/dev/sound/clone.h',
+            # 'sys/dev/sound/unit.h',
+            # 'sys/dev/sound/chip.h',
+            # 'sys/arm/broadcom/bcm2835/vc_vchi_audioserv_defs.h',
+            # 'sys/contrib/vchiq/interface/vchi/vchi.h',
+            # 'sys/contrib/vchiq/interface/vchi/vchi_cfg.h',
+            # 'sys/contrib/vchiq/interface/vchiq_arm/vchiq.h',
+            # 'sys/contrib/vchiq/interface/vchiq_arm/vchiq_util.h',
+            # 'sys/contrib/vchiq/interface/vchiq_arm/vchiq_core.h',
+            # 'sys/contrib/vchiq/interface/compat/list.h',
+
+            # FB
+            'sys/dev/syscons/syscons.h',
+            'sys/sys/power.h',
+            'sys/arm/include/sc_machdep.h',
+            'sys/dev/fb/splashreg.h',
+
+            # PWM
+            'sys/arm/broadcom/bcm2835/bcm2835_clkman.h',
+
+            # SD Host
+            'sys/arm/broadcom/bcm2835/bcm2835_dma.h',
+            'sys/arm/broadcom/bcm2835/bcm2835_mbox.h',
+            'sys/arm/broadcom/bcm2835/bcm2835_mbox_prop.h',
+            'sys/arm/broadcom/bcm2835/bcm2835_vcbus.h',
+
+            'sys/arm/broadcom/bcm2835/bcm2835_wdog.h',
+            'sys/arm/broadcom/bcm2835/bcm2836_mp.h',
+
+            # SPI
+            'sys/dev/spibus/spi.h',
+            'sys/dev/spibus/spibusvar.h',
+            'sys/arm/broadcom/bcm2835/bcm2835_spireg.h',
+            'sys/arm/broadcom/bcm2835/bcm2835_spivar.h',
+            ])
+
+        self.addSourceFiles([
+            'rtemsbsd/local/cpufreq_if.c',
+            ],
+            mm.generator['source']())
+
+        self.addCPUDependentFreeBSDSourceFiles(['arm'], [
+            # 'sys/kern/subr_devmap.c',
+
+            # 'sys/arm/broadcom/bcm2835/bcm2836.c', # Requires interrupts
+            # 'sys/arm/broadcom/bcm2835/bcm2836_mp.c',
+            'sys/arm/broadcom/bcm2835/bcm283x_dwc_fdt.c',
+
+            # Audio is complicated
+            # 'sys/arm/broadcom/bcm2835/bcm2835_audio.c',
+            # 'sys/contrib/vchiq/interface/vchiq_arm/vchiq_shim.c',
+            # 'sys/contrib/vchiq/interface/vchiq_arm/vchiq_util.c',
+            # 'sys/contrib/vchiq/interface/vchiq_arm/vchiq_core.c',
+
+            'sys/arm/broadcom/bcm2835/bcm2835_bsc.c',
+            'sys/arm/broadcom/bcm2835/bcm2835_clkman.c',
+
+            # 'sys/arm/broadcom/bcm2835/bcm2835_cpufreq.c', # No idea if even apropriate for RTOS
+
+            'sys/arm/broadcom/bcm2835/bcm2835_dma.c',
+
+            # Code requires forking
+            # 'sys/arm/broadcom/bcm2835/bcm2835_fb.c',
+            # 'sys/arm/broadcom/bcm2835/bcm2835_fbd.c',
+            # 'sys/dev/syscons/syscons.c',
+            # 'sys/arm/arm/sc_machdep.c',
+
+            # 'sys/arm/broadcom/bcm2835/bcm2835_ft5406.c',
+            # 'sys/arm/broadcom/bcm2835/bcm2835_gpio.c', # Requires interrupts
+            # 'sys/arm/broadcom/bcm2835/bcm2835_intr.c', # Requires interrupts
+            'sys/arm/broadcom/bcm2835/bcm2835_machdep.c',
+            'sys/arm/broadcom/bcm2835/bcm2835_mbox.c',
+            'sys/arm/broadcom/bcm2835/bcm2835_pwm.c',
+            'sys/arm/broadcom/bcm2835/bcm2835_rng.c',
+            'sys/arm/broadcom/bcm2835/bcm2835_sdhci.c',
+            'sys/arm/broadcom/bcm2835/bcm2835_sdhost.c',
+            'sys/arm/broadcom/bcm2835/bcm2835_spi.c',
+            # 'sys/arm/broadcom/bcm2835/bcm2835_systimer.c', # Missing define for PLATFORM
+            'sys/arm/broadcom/bcm2835/bcm2835_vcio.c',
+            'sys/arm/broadcom/bcm2835/bcm2835_wdog.c',
+            ],
+            mm.generator['source']()
+        )
+
 
 #
 # BBB USB
@@ -5501,6 +5634,7 @@ def load(mm):
     mm.addModule(cam(mm))
     mm.addModule(dev_usb_storage(mm))
     mm.addModule(dev_usb_controller_bbb(mm))
+    mm.addModule(dev_bcm283x(mm))
 
     mm.addModule(net(mm))
     mm.addModule(netinet(mm))
