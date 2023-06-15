@@ -954,6 +954,7 @@ class dev_usb(builder.Module):
         )
         self.addKernelSpaceSourceFiles(
             [
+                'sys/dev/usb/usb_fdt_support.c',
                 'sys/dev/usb/usb_busdma.c',
                 'sys/dev/usb/usb_core.c',
                 'sys/dev/usb/usb_debug.c',
@@ -1191,7 +1192,6 @@ class dev_bcm283x(builder.Module):
 
     def generate(self):
         mm = self.manager
-
         self.addKernelSpaceHeaderFiles([
             # IRQ
             'sys/sys/intr.h',
@@ -1980,6 +1980,7 @@ class nvme(builder.Module):
                 'sbin/nvmecontrol/reset.c',
                 'sbin/nvmecontrol/resv.c',
                 'sbin/nvmecontrol/sanitize.c',
+                'sys/dev/nvme/nvme_util.c',
             ],
             mm.generator['source']()
         )
@@ -1999,7 +2000,6 @@ class nvme(builder.Module):
                 'sys/dev/nvme/nvme_pci.c',
                 'sys/dev/nvme/nvme_qpair.c',
                 'sys/dev/nvme/nvme_sysctl.c',
-                'sys/dev/nvme/nvme_util.c',
             ],
             mm.generator['source']()
         )
