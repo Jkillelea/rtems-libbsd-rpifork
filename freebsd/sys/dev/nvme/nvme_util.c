@@ -1,4 +1,4 @@
-#include <machine/rtems-bsd-kernel-space.h>
+#include <machine/rtems-bsd-user-space.h>
 
 /*-
  * SPDX-License-Identifier: BSD-2-Clause-FreeBSD
