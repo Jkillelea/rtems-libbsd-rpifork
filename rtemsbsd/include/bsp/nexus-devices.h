@@ -47,6 +47,52 @@
 
 RTEMS_BSD_DRIVER_SMC0(0x4e000000,  RVPBXA9_IRQ_ETHERNET);
 
+#elif defined(LIBBSP_ARM_RASPBERRYPI_BSP_H)
+
+#include <bsp/irq.h>
+
+RTEMS_BSD_DEFINE_NEXUS_DEVICE(ofwbus, 0, 0, NULL); // loads
+SYSINIT_DRIVER_REFERENCE(simplebus, ofwbus); // loads
+
+SYSINIT_DRIVER_REFERENCE(mbox,             simplebus); // loads
+
+SYSINIT_DRIVER_REFERENCE(bcm2835_bsc, simplebus); // ??
+SYSINIT_DRIVER_REFERENCE(iicbus,      bcm2835_bsc); // ??
+SYSINIT_DRIVER_REFERENCE(iic,         iicbus);
+
+// SYSINIT_DRIVER_REFERENCE(bcm2835_cpufreq,  simplebus);
+SYSINIT_DRIVER_REFERENCE(bcm2835_clkman,   simplebus); // loads
+
+SYSINIT_DRIVER_REFERENCE(bcm283x_dwcotg,   simplebus); // loads
+SYSINIT_DRIVER_REFERENCE(bcm_dma,          simplebus); // loads
+
+// // None of these load? Need to bring in freebsd-org/sys/contrib/vchiq/interface/vchiq_arm/vchiq_kmod.c
+// SYSINIT_DRIVER_REFERENCE(sound,        simplebus);
+// SYSINIT_DRIVER_REFERENCE(vchiq,        simplebus);
+// SYSINIT_DRIVER_REFERENCE(bcm_audio,        simplebus);
+
+// SYSINIT_DRIVER_REFERENCE(ft5406ts,         simplebus);
+// SYSINIT_DRIVER_REFERENCE(lintc,            simplebus);
+
+
+SYSINIT_DRIVER_REFERENCE(sdhost_bcm,       simplebus); // loads
+SYSINIT_DRIVER_REFERENCE(mmc,              sdhost_bcm); // loads
+SYSINIT_DRIVER_REFERENCE(sdhci_bcm,        simplebus);
+SYSINIT_DRIVER_REFERENCE(sdhci_pwm,        simplebus);
+SYSINIT_DRIVER_REFERENCE(sdhci_spi,        simplebus);
+
+// SYSINIT_DRIVER_REFERENCE(mmcsd, mmc);
+
+// SYSINIT_DRIVER_REFERENCE(musbotg, usbss);
+// SYSINIT_DRIVER_REFERENCE(rtems_i2c, simplebus);
+// SYSINIT_DRIVER_REFERENCE(ofw_iicbus, rtems_i2c);
+// SYSINIT_DRIVER_REFERENCE(iicbus, rtems_i2c);
+
+// SYSINIT_DRIVER_REFERENCE(bcm2835_rng,      mbox); // Broken?
+// SYSINIT_DRIVER_REFERENCE(bcm2835_audio,    vchiq); // TODO
+// SYSINIT_DRIVER_REFERENCE(bcm2835fb,        simplebus); // TODO
+// SYSINIT_DRIVER_REFERENCE(bcm2835_pwm,      simplebus); // TODO
+
 #elif defined(LIBBSP_ARM_BEAGLE_BSP_H)
 
 #include <bsp/irq.h>
@@ -55,12 +101,20 @@ RTEMS_BSD_DEFINE_NEXUS_DEVICE(ofwbus, 0, 0, NULL);
 SYSINIT_DRIVER_REFERENCE(simplebus, ofwbus);
 SYSINIT_DRIVER_REFERENCE(ti_scm, simplebus);
 SYSINIT_DRIVER_REFERENCE(am335x_prcm, simplebus);
+SYSINIT_DRIVER_REFERENCE(am335x_pwmss, simplebus);
+SYSINIT_DRIVER_REFERENCE(am335x_lcd, simplebus);
 SYSINIT_DRIVER_REFERENCE(usbss, simplebus);
 SYSINIT_DRIVER_REFERENCE(musbotg, usbss);
 SYSINIT_DRIVER_REFERENCE(sdhci_ti, simplebus);
 SYSINIT_DRIVER_REFERENCE(mmcsd, mmc);
 SYSINIT_DRIVER_REFERENCE(cpsw, cpswss);
 SYSINIT_DRIVER_REFERENCE(ukphy, miibus);
+SYSINIT_DRIVER_REFERENCE(rtems_i2c, simplebus);
+SYSINIT_DRIVER_REFERENCE(ofw_iicbus, rtems_i2c);
+SYSINIT_DRIVER_REFERENCE(iic, iicbus);
+SYSINIT_DRIVER_REFERENCE(tda, iicbus);
+SYSINIT_DRIVER_REFERENCE(iicbus, rtems_i2c);
+SYSINIT_DRIVER_REFERENCE(fbd, fb);
 #ifdef RTEMS_BSD_MODULE_NET80211
 SYSINIT_DRIVER_REFERENCE(rtwn_usb, uhub);
 SYSINIT_MODULE_REFERENCE(wlan_ratectl_none);
@@ -97,43 +151,22 @@ RTEMS_BSD_DRIVER_FEC;
 #include <bsp/irq.h>
 
 RTEMS_BSD_DRIVER_XILINX_ZYNQ_SLCR;
-RTEMS_BSD_DRIVER_XILINX_ZYNQ_SDHCI0;
-RTEMS_BSD_DRIVER_XILINX_ZYNQ_SDHCI1;
 RTEMS_BSD_DRIVER_XILINX_ZYNQ_CGEM0(ZYNQ_IRQ_ETHERNET_0);
 RTEMS_BSD_DRIVER_E1000PHY;
-RTEMS_BSD_DRIVER_MMC;
 
 #elif defined(LIBBSP_AARCH64_XILINX_ZYNQMP_BSP_H)
 
 #include <bsp/irq.h>
 
-RTEMS_BSD_DEFINE_NEXUS_DEVICE(ofwbus, 0, 0, NULL);
-SYSINIT_DRIVER_REFERENCE(simplebus, ofwbus);
-RTEMS_BSD_DRIVER_XILINX_ZYNQMP_SLCR;
-/* Qemu only applies user-mode networking to the first interface by default, so
- * all 4 CGEM instances must be configured in the Qemu arguments using
- * "-nic user,model=cadence_gem" for each desired nic.
- */
-SYSINIT_DRIVER_REFERENCE(cgem, simplebus);
+RTEMS_BSD_DRIVER_XILINX_ZYNQMP_CGEM0(ZYNQMP_IRQ_ETHERNET_0);
 RTEMS_BSD_DRIVER_E1000PHY;
-RTEMS_BSD_DRIVER_UKPHY;
-
-RTEMS_BSD_DRIVER_XILINX_ZYNQMP_SDHCI0;
-RTEMS_BSD_DRIVER_XILINX_ZYNQMP_SDHCI1;
-RTEMS_BSD_DRIVER_MMC;
 
 #elif defined(LIBBSP_AARCH64_XILINX_VERSAL_BSP_H)
 
 #include <bsp/irq.h>
 
-RTEMS_BSD_DRIVER_XILINX_VERSAL_SLCR;
-RTEMS_BSD_DRIVER_XILINX_VERSAL_CGEM0(VERSAL_IRQ_ETHERNET_0);
-RTEMS_BSD_DRIVER_XILINX_VERSAL_CGEM1(VERSAL_IRQ_ETHERNET_1);
-RTEMS_BSD_DRIVER_UKPHY;
-
-RTEMS_BSD_DRIVER_XILINX_VERSAL_SDHCI0;
-RTEMS_BSD_DRIVER_XILINX_VERSAL_SDHCI1;
-RTEMS_BSD_DRIVER_MMC;
+RTEMS_BSD_DRIVER_XILINX_VERSAL_GEM0(VERSAL_IRQ_ETHERNET_0);
+RTEMS_BSD_DRIVER_E1000PHY;
 
 #elif defined(LIBBSP_ARM_ATSAM_BSP_H)
 
@@ -226,8 +259,6 @@ RTEMS_BSD_DRIVER_PCI_IGB;
 RTEMS_BSD_DRIVER_PCI_EM;
 RTEMS_BSD_DRIVER_PCI_RE;
 RTEMS_BSD_DRIVER_REPHY;
-RTEMS_BSD_DRIVER_PCI_DC;
-RTEMS_BSD_DRIVER_DCPHY;
 
 #elif defined(LIBBSP_POWERPC_QORIQ_BSP_H)
 
@@ -274,17 +305,7 @@ SYSINIT_DRIVER_REFERENCE(ukphy, miibus);
 #elif defined(LIBBSP_POWERPC_MOTOROLA_POWERPC_BSP_H)
 
 RTEMS_BSD_DRIVER_PC_LEGACY;
-RTEMS_BSD_DRIVER_PCI_DC;
-RTEMS_BSD_DRIVER_UKPHY;
 
-#elif defined(LIBBSP_MICROBLAZE_FPGA_BSP_H)
-
-RTEMS_BSD_DEFINE_NEXUS_DEVICE(ofwbus, 0, 0, NULL);
-SYSINIT_DRIVER_REFERENCE(simplebus, ofwbus);
-SYSINIT_DRIVER_REFERENCE(xae, simplebus);
-SYSINIT_DRIVER_REFERENCE(axidma, simplebus);
-RTEMS_BSD_DRIVER_E1000PHY;
-
-#endif /* LIBBSP_MICROBLAZE_FPGA_BSP_H */
+#endif /* LIBBSP_POWERPC_MOTOROLA_POWERPC_BSP_H */
 
 #endif
