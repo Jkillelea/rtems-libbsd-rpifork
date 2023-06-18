@@ -54,26 +54,30 @@ RTEMS_BSD_DRIVER_SMC0(0x4e000000,  RVPBXA9_IRQ_ETHERNET);
 RTEMS_BSD_DEFINE_NEXUS_DEVICE(ofwbus, 0, 0, NULL); // loads
 SYSINIT_DRIVER_REFERENCE(simplebus, ofwbus); // loads
 
-SYSINIT_DRIVER_REFERENCE(mbox,             simplebus); // loads
+
+SYSINIT_DRIVER_REFERENCE(mbox, simplebus); // loads
 
 SYSINIT_DRIVER_REFERENCE(bcm2835_bsc, simplebus); // ??
-SYSINIT_DRIVER_REFERENCE(iicbus,      bcm2835_bsc); // ??
-SYSINIT_DRIVER_REFERENCE(iic,         iicbus);
+SYSINIT_DRIVER_REFERENCE(iicbus, bcm2835_bsc); // ??
+SYSINIT_DRIVER_REFERENCE(iic, iicbus);
+SYSINIT_DRIVER_REFERENCE(rtems_i2c, simplebus);
+SYSINIT_DRIVER_REFERENCE(ofw_iicbus, rtems_i2c);
+SYSINIT_DRIVER_REFERENCE(iicbus, rtems_i2c);
 
-// SYSINIT_DRIVER_REFERENCE(bcm2835_cpufreq,  simplebus);
+SYSINIT_DRIVER_REFERENCE(bcm2835_cpufreq,  simplebus);
+SYSINIT_DRIVER_REFERENCE(bcm2835_cpufreq,  cpu);
 SYSINIT_DRIVER_REFERENCE(bcm2835_clkman,   simplebus); // loads
 
 SYSINIT_DRIVER_REFERENCE(bcm283x_dwcotg,   simplebus); // loads
 SYSINIT_DRIVER_REFERENCE(bcm_dma,          simplebus); // loads
-
-// // None of these load? Need to bring in freebsd-org/sys/contrib/vchiq/interface/vchiq_arm/vchiq_kmod.c
-// SYSINIT_DRIVER_REFERENCE(sound,        simplebus);
-// SYSINIT_DRIVER_REFERENCE(vchiq,        simplebus);
-// SYSINIT_DRIVER_REFERENCE(bcm_audio,        simplebus);
-
-// SYSINIT_DRIVER_REFERENCE(ft5406ts,         simplebus);
-// SYSINIT_DRIVER_REFERENCE(lintc,            simplebus);
-
+// 
+// // // None of these load? Need to bring in freebsd-org/sys/contrib/vchiq/interface/vchiq_arm/vchiq_kmod.c
+// // SYSINIT_DRIVER_REFERENCE(sound,        simplebus);
+// // SYSINIT_DRIVER_REFERENCE(vchiq,        simplebus);
+// // SYSINIT_DRIVER_REFERENCE(bcm_audio,        simplebus);
+// 
+// // SYSINIT_DRIVER_REFERENCE(ft5406ts,         simplebus);
+// // SYSINIT_DRIVER_REFERENCE(lintc,            simplebus);
 
 SYSINIT_DRIVER_REFERENCE(sdhost_bcm,       simplebus); // loads
 SYSINIT_DRIVER_REFERENCE(mmc,              sdhost_bcm); // loads
@@ -81,17 +85,25 @@ SYSINIT_DRIVER_REFERENCE(sdhci_bcm,        simplebus);
 SYSINIT_DRIVER_REFERENCE(sdhci_pwm,        simplebus);
 SYSINIT_DRIVER_REFERENCE(sdhci_spi,        simplebus);
 
-// SYSINIT_DRIVER_REFERENCE(mmcsd, mmc);
+SYSINIT_DRIVER_REFERENCE(mmcsd, mmc);
 
-// SYSINIT_DRIVER_REFERENCE(musbotg, usbss);
-// SYSINIT_DRIVER_REFERENCE(rtems_i2c, simplebus);
-// SYSINIT_DRIVER_REFERENCE(ofw_iicbus, rtems_i2c);
-// SYSINIT_DRIVER_REFERENCE(iicbus, rtems_i2c);
+SYSINIT_DRIVER_REFERENCE(usbss, simplebus);
+SYSINIT_DRIVER_REFERENCE(musbotg, usbss);
 
 // SYSINIT_DRIVER_REFERENCE(bcm2835_rng,      mbox); // Broken?
-// SYSINIT_DRIVER_REFERENCE(bcm2835_audio,    vchiq); // TODO
-// SYSINIT_DRIVER_REFERENCE(bcm2835fb,        simplebus); // TODO
-// SYSINIT_DRIVER_REFERENCE(bcm2835_pwm,      simplebus); // TODO
+
+SYSINIT_DRIVER_REFERENCE(bcm2835_audio,    vchiq);                         
+SYSINIT_DRIVER_REFERENCE(bcm2835fb,        simplebus);                         
+SYSINIT_DRIVER_REFERENCE(bcm2835_pwm,      simplebus);                         
+// SYSINIT_DRIVER_REFERENCE(bcm2835_rng,      simplebus); // crashing with exception
+// SYSINIT_DRIVER_REFERENCE(bcm2835_spi,      simplebus);                         
+SYSINIT_DRIVER_REFERENCE(bcmdummy,         bcmdummysw);                                                            
+SYSINIT_DRIVER_REFERENCE(bcmfb,            bcmfbvidsw);                                                                
+SYSINIT_DRIVER_REFERENCE(bcm_gpio,         simplebus);
+SYSINIT_DRIVER_REFERENCE(bcm_systimer,     simplebus);                         
+SYSINIT_DRIVER_REFERENCE(bcmwd,            simplebus);                         
+SYSINIT_DRIVER_REFERENCE(intc,             simplebus);
+
 
 #elif defined(LIBBSP_ARM_BEAGLE_BSP_H)
 
