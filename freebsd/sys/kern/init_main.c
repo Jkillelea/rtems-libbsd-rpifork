@@ -204,6 +204,9 @@ int	bootverbose = 1;
 SYSCTL_INT(_debug, OID_AUTO, bootverbose, CTLFLAG_RW, &bootverbose, 0,
 	"Control the output of verbose kernel messages");
 #endif
+#ifdef VERBOSE_SYSINIT
+int verbose_sysinit = VERBOSE_SYSINIT;
+#endif /* VERBOSE_SYSINIT */
 RWSET_DECLARE(sysinit_set, struct sysinit);
 #endif /* __rtems__ */
 
