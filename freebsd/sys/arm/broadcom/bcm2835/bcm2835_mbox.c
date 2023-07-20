@@ -28,6 +28,11 @@
  * SUCH DAMAGE.
  */
 
+#ifdef __rtems__
+#include <rtems/rtems/cache.h>
+#include <stdint.h>
+#endif /* __rtems__ */
+
 #include <sys/cdefs.h>
 __FBSDID("$FreeBSD$");
 
@@ -95,6 +100,14 @@ struct bcm_mbox_softc {
     bus_space_read_4((sc)->bst, (sc)->bsh, reg)
 #define	mbox_write_4(sc, reg, val)		\
     bus_space_write_4((sc)->bst, (sc)->bsh, reg, val)
+
+#ifdef __rtems__
+static void bcm2835_cache_flush_and_invalidate(void *buf, uint32_t size) {
+    dprintf("bcm2835_cache_flush_and_invalidate %p %d\n", buf, size);
+    rtems_cache_flush_multiple_data_lines(buf, size);
+    rtems_cache_invalidate_multiple_data_lines(buf, size);
+}
+#endif /* __rtems__ */
 
 static struct ofw_compat_data compat_data[] = {
 	{"broadcom,bcm2835-mbox",	1},
@@ -411,7 +424,23 @@ bcm2835_mbox_property(void *msg, size_t msg_size)
 		goto out;
 	}
 
+#ifdef __rtems__
+    dprintf("bcm2835_mbox_property: msg.hdr.len %d, msg.hdr.type 0x%x\n",
+            ((struct msg_set_power_state *) msg)->hdr.buf_size,
+            ((struct msg_set_power_state *) msg)->hdr.code);
+    dprintf("\t msg.tag_hdr.tag 0x%x, msg.tag_hdr.val_buf_size %d, msg.tag_hdr.val_len %x\n",
+            ((struct msg_set_power_state *) msg)->tag_hdr.tag,
+            ((struct msg_set_power_state *) msg)->tag_hdr.val_buf_size,
+            ((struct msg_set_power_state *) msg)->tag_hdr.val_len);
+    dprintf("\t msg.body.req.device_id %d, msg.body.req.state %d\n",
+            ((struct msg_set_power_state *) msg)->body.req.device_id,
+            ((struct msg_set_power_state *) msg)->body.req.state);
+#endif /* __rtems__ */
+
 	memcpy(buf, msg, msg_size);
+#ifdef __rtems__
+    bcm2835_cache_flush_and_invalidate(buf, msg_size);
+#endif /* __rtems__ */
 
 	bus_dmamap_sync(msg_tag, msg_map,
 	    BUS_DMASYNC_PREWRITE);
@@ -422,7 +451,23 @@ bcm2835_mbox_property(void *msg, size_t msg_size)
 	bus_dmamap_sync(msg_tag, msg_map,
 	    BUS_DMASYNC_PREREAD);
 
+#ifdef __rtems__
+    bcm2835_cache_flush_and_invalidate(buf, msg_size);
+#endif /* __rtems__ */
 	memcpy(msg, buf, msg_size);
+
+#ifdef __rtems__
+    dprintf("bcm2835_mbox_property: msg.hdr.len %d, msg.hdr.type 0x%x\n",
+            ((struct msg_set_power_state *) msg)->hdr.buf_size,
+            ((struct msg_set_power_state *) msg)->hdr.code);
+    dprintf("\t msg.tag_hdr.tag 0x%x, msg.tag_hdr.val_buf_size %d, msg.tag_hdr.val_len %x\n",
+            ((struct msg_set_power_state *) msg)->tag_hdr.tag,
+            ((struct msg_set_power_state *) msg)->tag_hdr.val_buf_size,
+            ((struct msg_set_power_state *) msg)->tag_hdr.val_len);
+    dprintf("\t msg.body.resp.device_id %d, msg.body.resp.state %d\n",
+            ((struct msg_set_power_state *) msg)->body.resp.device_id,
+            ((struct msg_set_power_state *) msg)->body.resp.state);
+#endif /* __rtems__ */
 
 	err = bcm2835_mbox_err(mbox, msg_phys, reg,
 	    (struct bcm2835_mbox_hdr *)msg, msg_size);
