@@ -145,6 +145,8 @@ bcmwd_attach(device_t dev)
 	mtx_init(&sc->mtx, "BCM2835 Watchdog", "bcmwd", MTX_DEF);
 	EVENTHANDLER_REGISTER(watchdog_list, bcmwd_watchdog_fn, sc, 0);
 
+    device_printf(dev, "BCM2835 Watchdog\n");
+
 	return (0);
 }
 

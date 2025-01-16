@@ -1273,6 +1273,8 @@ class dev_bcm283x(builder.Module):
             # 'sys/kern/subr_devmap.c',
 
             # 'sys/arm/broadcom/bcm2835/bcm2836.c', # Requires interrupts
+            # 'sys/kern/subr_intr.c',
+
             # 'sys/arm/broadcom/bcm2835/bcm2836_mp.c',
             'sys/arm/broadcom/bcm2835/bcm283x_dwc_fdt.c',
 

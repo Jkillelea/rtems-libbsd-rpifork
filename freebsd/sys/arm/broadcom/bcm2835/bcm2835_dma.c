@@ -251,13 +251,22 @@ bcm_dma_init(device_t dev)
 
 	/* Allocate DMA chunks control blocks */
 	/* p.40 of spec - control block should be 32-bit aligned */
-	err = bus_dma_tag_create(bus_get_dma_tag(dev),
-	    1, 0, BUS_SPACE_MAXADDR_32BIT,
-	    BUS_SPACE_MAXADDR, NULL, NULL,
-	    sizeof(struct bcm_dma_cb), 1,
-	    sizeof(struct bcm_dma_cb),
-	    BUS_DMA_ALLOCNOW, NULL, NULL,
-	    &sc->sc_dma_tag);
+    err = bus_dma_tag_create(
+            bus_get_dma_tag(dev), /* parent */
+            0x20, /* alignment */
+            0, /* boundary */
+            BUS_SPACE_MAXADDR_32BIT, /* lowaddr */
+            BUS_SPACE_MAXADDR, /* highaddr */
+            NULL, /* filter func */
+            NULL, /* filter func arg */
+            sizeof(struct bcm_dma_cb), /* maxsize */
+            1, /* nsegments */
+            sizeof(struct bcm_dma_cb), /* maxsegsz */
+            BUS_DMA_ALLOCNOW, /* flags */
+            NULL, /* lockfunc */
+            NULL, /* lockfuncarg */
+            &sc->sc_dma_tag /* dma tag */
+            );
 
 	if (err) {
 		device_printf(dev, "failed allocate DMA tag\n");
@@ -307,6 +316,9 @@ bcm_dma_init(device_t dev)
 		ch->vc_cb = cb_phys;
 		ch->flags = BCM_DMA_CH_FREE;
 		ch->cb->info = INFO_WAIT_RESP;
+
+        device_printf(dev, "virt addr: %p\n", cb_virt);
+        device_printf(dev, "phys addr: %p\n", cb_phys);
 
 		/* reset DMA engine */
 		bus_write_4(sc->sc_mem, BCM_DMA_CS(i), CS_RESET);

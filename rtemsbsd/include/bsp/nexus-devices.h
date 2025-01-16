@@ -31,6 +31,7 @@
  * SUCH DAMAGE.
  */
 
+#include "sys/kernel.h"
 #if !defined(BSP_NEXUS_DEVICES_h)
 #define BSP_NEXUS_DEVICES_h
 
@@ -50,60 +51,151 @@ RTEMS_BSD_DRIVER_SMC0(0x4e000000,  RVPBXA9_IRQ_ETHERNET);
 #elif defined(LIBBSP_ARM_RASPBERRYPI_BSP_H)
 
 #include <bsp/irq.h>
+// RTEMS RPi A+ 1.1 (512MB) [00900021]
 
-RTEMS_BSD_DEFINE_NEXUS_DEVICE(ofwbus, 0, 0, NULL); // loads
-SYSINIT_DRIVER_REFERENCE(simplebus, ofwbus); // loads
+/*
+ * ofwbus0: <arm-pmu> compat arm,arm1176-pmu (no driver attached)
+ * ofwbus0: <clocks> compat simple-bus (no driver attached)
+ * ofwbus0: <leds> compat gpio-leds (no driver attached)
+ * ofwbus0: <phy> compat usb-nop-xceiv (no driver attached)
+ * simplebus0: <audio> disabled compat brcm,bcm2835-audio (no driver attached)
+ * simplebus0: <aux@7e215000> mem 0x7e215000-0x7e215007 compat brcm,bcm2835-aux (no driver attached)
+ * simplebus0: <axiperf> mem 0x7e009800-0x7e0098ff,0x7ee08000-0x7ee080ff disabled compat brcm,bcm2835-axiperf (no driver attached)
+ * simplebus0: <csi@7e800000> mem 0x7e800000-0x7e8007ff,0x7e802000-0x7e802003 irq 38 disabled compat brcm,bcm2835-unicam (no driver attached)
+ * simplebus0: <csi@7e801000> mem 0x7e801000-0x7e8017ff,0x7e802004-0x7e802007 irq 39 disabled compat brcm,bcm2835-unicam (no driver attached)
+ * simplebus0: <dpi@7e208000> mem 0x7e208000-0x7e20808b disabled compat brcm,bcm2835-dpi (no driver attached)
+ * simplebus0: <dsi@7e209000> mem 0x7e209000-0x7e209077 irq 36 disabled compat brcm,bcm2835-dsi0 (no driver attached)
+ * simplebus0: <dsi@7e700000> mem 0x7e700000-0x7e70008b irq 44 disabled compat brcm,bcm2835-dsi1 (no driver attached)
+ * simplebus0: <firmware> compat raspberrypi,bcm2835-firmware (no driver attached)
+ * simplebus0: <firmwarekms@7e600000> mem 0x7e600000-0x7e6000ff irq 48 disabled compat raspberrypi,rpi-firmware-kms (no driver attached)
+ * simplebus0: <gpio@7e200000> mem 0x7e200000-0x7e2000b3 irq 49,50 compat brcm,bcm2835-gpio (no driver attached)
+ * simplebus0: <gpiomem> mem 0x7e200000-0x7e200fff compat brcm,bcm2835-gpiomem (no driver attached)
+ * simplebus0: <gpu> disabled compat brcm,bcm2835-vc4 (no driver attached)
+ * simplebus0: <hdmi@7e902000> mem 0x7e902000-0x7e9025ff,0x7e808000-0x7e8080ff irq 40,41 disabled compat brcm,bcm2835-hdmi (no driver attached)
+ * simplebus0: <hvs@7e400000> mem 0x7e400000-0x7e405fff irq 33 disabled compat brcm,bcm2835-hvs (no driver attached)
+ * simplebus0: <i2s@7e203000> mem 0x7e203000-0x7e203023 disabled compat brcm,bcm2835-i2s (no driver attached)
+ * simplebus0: <interrupt-controller@7e00b200> mem 0x7e00b200-0x7e00b3ff compat brcm,bcm2835-armctrl-ic (no driver attached)
+ * simplebus0: <mailbox@7e00b840> mem 0x7e00b840-0x7e00b87b irq 66 compat brcm,bcm2835-vchiq (no driver attached)
+ * simplebus0: <mmc@7e300000> mem 0x7e300000-0x7e3000ff irq 62 disabled compat brcm,bcm2835-mmc (no driver attached)
+ * simplebus0: <mmcnr@7e300000> mem 0x7e300000-0x7e3000ff irq 62 disabled compat brcm,bcm2835-mmc (no driver attached)
+ * simplebus0: <pixelvalve@7e206000> mem 0x7e206000-0x7e2060ff irq 45 disabled compat brcm,bcm2835-pixelvalve0 (no driver attached)
+ * simplebus0: <pixelvalve@7e207000> mem 0x7e207000-0x7e2070ff irq 46 disabled compat brcm,bcm2835-pixelvalve1 (no driver attached)
+ * simplebus0: <pixelvalve@7e807000> mem 0x7e807000-0x7e8070ff irq 42 disabled compat brcm,bcm2835-pixelvalve2 (no driver attached)
+ * simplebus0: <power> compat raspberrypi,bcm2835-power (no driver attached)
+ * simplebus0: <serial@7e201000> mem 0x7e201000-0x7e2011ff irq 57 compat brcm,bcm2835-pl011 (no driver attached)
+ * simplebus0: <serial@7e215040> mem 0x7e215040-0x7e21507f irq 29 disabled compat brcm,bcm2835-aux-uart (no driver attached)
+ * simplebus0: <smi@7e600000> mem 0x7e600000-0x7e6000ff irq 48 disabled compat brcm,bcm2835-smi (no driver attached)
+ * simplebus0: <timer@7e003000> mem 0x7e003000-0x7e003fff irq 0,1,2,3 compat brcm,bcm2835-system-timer (no driver attached)
+ * simplebus0: <txp@7e004000> mem 0x7e004000-0x7e00401f irq 11 disabled compat brcm,bcm2835-txp (no driver attached)
+ * simplebus0: <v3d@7ec00000> mem 0x7ec00000-0x7ec00fff irq 10 disabled compat brcm,vc4-v3d (no driver attached)
+ * simplebus0: <vec@7e806000> mem 0x7e806000-0x7e806fff irq 59 disabled compat brcm,bcm2835-vec (no driver attached)
+ */
 
+/* TODO:
+ * simplebus0: <thermal@7e212000> mem 0x7e212000-0x7e212007 compat brcm,bcm2835-thermal (no driver attached)
+ * simplebus0: <fb> compat brcm,bcm2708-fb (no driver attached)
+ * simplebus0: <vcsm> compat raspberrypi,bcm2835-vcsm (no driver attached)
+ */
 
-SYSINIT_DRIVER_REFERENCE(mbox, simplebus); // loads
+// nexus0: <RTEMS Nexus device>
+RTEMS_BSD_DEFINE_NEXUS_DEVICE(ofwbus, 0, 0, NULL); // ofwbus0: <Open Firmware Device Tree> on nexus0
+SYSINIT_DRIVER_REFERENCE(simplebus, ofwbus); // simplebus0: <Flattened device tree simple bus> on ofwbus0
 
+// bcm_dma0: <BCM2835 DMA Controller> mem 0x7e007000-0x7e007eff irq 16,17,18,19,20,21,22,23,24,25,26,27,27,27,27,28 on simplebus0
+SYSINIT_DRIVER_REFERENCE(bcm_dma, simplebus);
+
+// mbox0: <BCM2835 VideoCore Mailbox> mem 0x7e00b880-0x7e00b8bf irq 65 on simplebus0
+SYSINIT_DRIVER_REFERENCE(mbox, simplebus);
+
+// bcmwd0: <BCM2708/2835 Watchdog> mem 0x7e100000-0x7e100113,0x7e00a000-0x7e00a023 on simplebus0
+SYSINIT_DRIVER_REFERENCE(bcmwd, simplebus);
+
+/*
+ * simplebus0: <i2c@7e205000> mem 0x7e205000-0x7e2051ff irq 53 disabled compat brcm,bcm2835-i2c (no driver attached)
+ * simplebus0: <i2c@7e804000> mem 0x7e804000-0x7e804fff irq 53 disabled compat brcm,bcm2835-i2c (no driver attached)
+ * simplebus0: <i2c@7e805000> mem 0x7e805000-0x7e805fff irq 53 disabled compat brcm,bcm2835-i2c (no driver attached)
+ */
 SYSINIT_DRIVER_REFERENCE(bcm2835_bsc, simplebus); // ??
-SYSINIT_DRIVER_REFERENCE(iicbus, bcm2835_bsc); // ??
-SYSINIT_DRIVER_REFERENCE(iic, iicbus);
+SYSINIT_DRIVER_REFERENCE(iicbus, simplebus); // ??
+SYSINIT_DRIVER_REFERENCE(iic, simplebus); // ??
+
 SYSINIT_DRIVER_REFERENCE(rtems_i2c, simplebus);
 SYSINIT_DRIVER_REFERENCE(ofw_iicbus, rtems_i2c);
 SYSINIT_DRIVER_REFERENCE(iicbus, rtems_i2c);
+// SYSINIT_DRIVER_REFERENCE(bcm2835_cpufreq,  simplebus); // no reference
+// SYSINIT_DRIVER_REFERENCE(bcm2835_cpufreq,  cpu); // no reference
+// SYSINIT_DRIVER_REFERENCE(bcm2835_clkman,   simplebus); // bcm2835_clkman0: <BCM283x Clock Manager> mem 0x7e101000-0x7e102fff on simplebus0
 
-SYSINIT_DRIVER_REFERENCE(bcm2835_cpufreq,  simplebus);
-SYSINIT_DRIVER_REFERENCE(bcm2835_cpufreq,  cpu);
-SYSINIT_DRIVER_REFERENCE(bcm2835_clkman,   simplebus); // loads
+// None of these load? Need to bring in freebsd-org/sys/contrib/vchiq/interface/vchiq_arm/vchiq_kmod.c
+// SYSINIT_DRIVER_REFERENCE(sound, simplebus);
+// SYSINIT_DRIVER_REFERENCE(vchiq, simplebus);
+// SYSINIT_DRIVER_REFERENCE(bcm_audio, simplebus);
+// SYSINIT_DRIVER_REFERENCE(ft5406ts, simplebus);
+// SYSINIT_DRIVER_REFERENCE(lintc, simplebus);
 
-SYSINIT_DRIVER_REFERENCE(bcm283x_dwcotg,   simplebus); // loads
-SYSINIT_DRIVER_REFERENCE(bcm_dma,          simplebus); // loads
-// 
-// // // None of these load? Need to bring in freebsd-org/sys/contrib/vchiq/interface/vchiq_arm/vchiq_kmod.c
-// // SYSINIT_DRIVER_REFERENCE(sound,        simplebus);
-// // SYSINIT_DRIVER_REFERENCE(vchiq,        simplebus);
-// // SYSINIT_DRIVER_REFERENCE(bcm_audio,        simplebus);
-// 
-// // SYSINIT_DRIVER_REFERENCE(ft5406ts,         simplebus);
-// // SYSINIT_DRIVER_REFERENCE(lintc,            simplebus);
+// sdhost_bcm0: <Broadcom 2708 SDHOST controller> mem 0x7e202000-0x7e2020ff irq 56 on simplebus0
+// This appears to be the Wifi module
+SYSINIT_DRIVER_REFERENCE(sdhost_bcm, simplebus); // "Rubbish" SDHCI version
 
-SYSINIT_DRIVER_REFERENCE(sdhost_bcm,       simplebus); // loads
-SYSINIT_DRIVER_REFERENCE(mmc,              sdhost_bcm); // loads
-SYSINIT_DRIVER_REFERENCE(sdhci_bcm,        simplebus);
-SYSINIT_DRIVER_REFERENCE(sdhci_pwm,        simplebus);
-SYSINIT_DRIVER_REFERENCE(sdhci_spi,        simplebus);
+// sdhci_bcm0: <Broadcom 2708 SDHCI controller> mem 0x7e300000-0x7e3000ff irq 62 on simplebus0
+// This appears to be the sd card
+// SYSINIT_DRIVER_REFERENCE(sdhci_bcm, simplebus);
+// SYSINIT_DRIVER_REFERENCE(mmc, sdhci_bcm);
+// RTEMS_BSD_DRIVER_MMC;
 
-SYSINIT_DRIVER_REFERENCE(mmcsd, mmc);
+// SYSINIT_DRIVER_REFERENCE(mmc, simplebus);
+// SYSINIT_DRIVER_REFERENCE(mmcsd, mmc);
+
+// SYSINIT_DRIVER_REFERENCE(sdhci_pwm, simplebus); // not loading
+
+/* simplebus0: <pwm@7e20c000> mem 0x7e20c000-0x7e20c027 disabled compat brcm,bcm2835-pwm (no driver attached) */
+// OFW bus status is disabled?
+// SYSINIT_DRIVER_REFERENCE(bcm2835_pwm,      simplebus); // not loading
+// SYSINIT_DRIVER_REFERENCE(sdhci_spi,        simplebus); // not loading
 
 SYSINIT_DRIVER_REFERENCE(usbss, simplebus);
-SYSINIT_DRIVER_REFERENCE(musbotg, usbss);
+// SYSINIT_DRIVER_REFERENCE(usbus, ehci); // not loading
+// SYSINIT_DRIVER_REFERENCE(usbus, ohci); // not loading
 
-// SYSINIT_DRIVER_REFERENCE(bcm2835_rng,      mbox); // Broken?
+// bcm283x_dwcotg0: <DWC OTG 2.0 integrated USB controller (bcm283x)> mem 0x7e980000-0x7e98ffff,0x7e006000-0x7e006fff irq 9,32 on simplebus0
+SYSINIT_DRIVER_REFERENCE(bcm283x_dwcotg, simplebus);
 
-SYSINIT_DRIVER_REFERENCE(bcm2835_audio,    vchiq);                         
-SYSINIT_DRIVER_REFERENCE(bcm2835fb,        simplebus);                         
-SYSINIT_DRIVER_REFERENCE(bcm2835_pwm,      simplebus);                         
+/* usbus0: 480Mbps High Speed USB v2.0
+ * ugen0.1: <DWCOTG OTG Root HUB> at usbus0 (USB generic)
+ * uhub0 on usbus0
+ * uhub0: <DWCOTG OTG Root HUB, class 9/0, rev 2.00/1.00, addr 1> on usbus0
+ * uhub0: 1 port with 1 removable, self powered
+ */
+SYSINIT_DRIVER_REFERENCE(usbus, bcm283x_dwcotg); // usbus0 on bcm283x_dwcotg0
+RTEMS_BSD_DRIVER_USB;
+RTEMS_BSD_DRIVER_USB_MASS;
+SYSINIT_DRIVER_REFERENCE(dwcotg, simplebus);
+
+SYSINIT_DRIVER_REFERENCE(smsc, simplebus);
+
+// SYSINIT_DRIVER_REFERENCE(bcm2835_audio,    vchiq); // not loading
+// SYSINIT_DRIVER_REFERENCE(bcm2835fb,        simplebus); // not loading
+/* simplebus0: <rng@7e104000> mem 0x7e104000-0x7e10400f irq 61 compat brcm,bcm2835-rng (no driver attached) */
 // SYSINIT_DRIVER_REFERENCE(bcm2835_rng,      simplebus); // crashing with exception
-// SYSINIT_DRIVER_REFERENCE(bcm2835_spi,      simplebus);                         
-SYSINIT_DRIVER_REFERENCE(bcmdummy,         bcmdummysw);                                                            
-SYSINIT_DRIVER_REFERENCE(bcmfb,            bcmfbvidsw);                                                                
-SYSINIT_DRIVER_REFERENCE(bcm_gpio,         simplebus);
-SYSINIT_DRIVER_REFERENCE(bcm_systimer,     simplebus);                         
-SYSINIT_DRIVER_REFERENCE(bcmwd,            simplebus);                         
-SYSINIT_DRIVER_REFERENCE(intc,             simplebus);
 
+/*
+ * simplebus0: <spi@7e204000> mem 0x7e204000-0x7e2041ff irq 54 disabled compat brcm,bcm2835-spi (no driver attached)
+ * simplebus0: <spi@7e215080> mem 0x7e215080-0x7e2150bf irq 29 disabled compat brcm,bcm2835-aux-spi (no driver attached)
+ * simplebus0: <spi@7e2150c0> mem 0x7e2150c0-0x7e2150ff irq 29 disabled compat brcm,bcm2835-aux-spi (no driver attached)
+ */
+// SYSINIT_DRIVER_REFERENCE(bcm2835_spi, simplebus); // linker errors
+
+// SYSINIT_DRIVER_REFERENCE(bcmdummy,         bcmdummysw); // not loading
+// SYSINIT_DRIVER_REFERENCE(bcmfb,            bcmfbvidsw); // not loading
+// SYSINIT_DRIVER_REFERENCE(bcmfb,            simplebus); // not loading
+SYSINIT_DRIVER_REFERENCE(bcm_gpio,         simplebus); // not loading
+// SYSINIT_DRIVER_REFERENCE(bcm_systimer,     simplebus); // not loading
+// SYSINIT_DRIVER_REFERENCE(intc,             simplebus); // not loading
+
+RTEMS_BSD_DRIVER_E1000PHY;
+RTEMS_BSD_DRIVER_ICSPHY;
+RTEMS_BSD_DRIVER_REPHY;
+RTEMS_BSD_DRIVER_PHY_MIC;
 
 #elif defined(LIBBSP_ARM_BEAGLE_BSP_H)
 

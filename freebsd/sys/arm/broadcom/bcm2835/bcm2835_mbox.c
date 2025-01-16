@@ -78,6 +78,7 @@ __FBSDID("$FreeBSD$");
 	mtx_unlock(&(sc)->lock);	\
 } while(0)
 
+#define  DEBUG
 #ifdef  DEBUG
 #define dprintf(fmt, args...) printf(fmt, ##args)
 #else
@@ -417,8 +418,7 @@ bcm2835_mbox_property(void *msg, size_t msg_size)
 	sx_xlock(&sc->property_chan_lock);
 
 	/* Allocate memory for the message */
-	buf = bcm2835_mbox_init_dma(mbox, msg_size, &msg_tag, &msg_map,
-	    &msg_phys);
+	buf = bcm2835_mbox_init_dma(mbox, msg_size, &msg_tag, &msg_map, &msg_phys);
 	if (buf == NULL) {
 		err = ENOMEM;
 		goto out;
@@ -442,11 +442,15 @@ bcm2835_mbox_property(void *msg, size_t msg_size)
     bcm2835_cache_flush_and_invalidate(buf, msg_size);
 #endif /* __rtems__ */
 
+    // NOTE: DMA bus addresses are different from RPI1 to RPI2+
 	bus_dmamap_sync(msg_tag, msg_map,
 	    BUS_DMASYNC_PREWRITE);
 
-	MBOX_WRITE(mbox, BCM2835_MBOX_CHAN_PROP, (uint32_t)msg_phys);
-	MBOX_READ(mbox, BCM2835_MBOX_CHAN_PROP, &reg);
+    raspberrypi_mailbox_write(BCM2835_MBOX_CHAN_PROP, msg_phys);
+    msg_phys = raspberrypi_mailbox_read(BCM2835_MBOX_CHAN_PROP);
+
+	// MBOX_WRITE(mbox, BCM2835_MBOX_CHAN_PROP, (uint32_t)msg_phys);
+	// MBOX_READ(mbox, BCM2835_MBOX_CHAN_PROP, &reg);
 
 	bus_dmamap_sync(msg_tag, msg_map,
 	    BUS_DMASYNC_PREREAD);
@@ -469,8 +473,7 @@ bcm2835_mbox_property(void *msg, size_t msg_size)
             ((struct msg_set_power_state *) msg)->body.resp.state);
 #endif /* __rtems__ */
 
-	err = bcm2835_mbox_err(mbox, msg_phys, reg,
-	    (struct bcm2835_mbox_hdr *)msg, msg_size);
+	err = bcm2835_mbox_err(mbox, msg_phys, reg, (struct bcm2835_mbox_hdr *)msg, msg_size);
 
 	bus_dmamap_unload(msg_tag, msg_map);
 	bus_dmamem_free(msg_tag, buf, msg_map);
